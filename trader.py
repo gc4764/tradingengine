@@ -1,9 +1,175 @@
 import csv
 import sys
 
+
+# exchange  NSE BSE MCX NFO NCD
+#instrument_type EQUITY FUTSTK etc
+#scrip INFY HCLTECH BPCL
+#entry LONG SHORT EXIT COVER
+#price 
+#stoploss
+#target
+#time_frame 5MIN, 15MIN, 1HOUR, 2HOUR, 4HOUR, DAILY, WEEKLY
+#trade_type SCALPING INTRADAY SWING SHORT_TERM LONG_TERM 
+#analysis FUNDAMENTAL TECHNICAL
+#did_i_follow_my_rule YES NO
+#why_am_i_traging_this "comment"
+
+CLOSE_LOOP = -1
+EXIT = -2
+
+LONG = "LONG"
+SHORT = "SHORT"
+EXIT = "LONG EXIT"
+COVER = "SHORT COVER"
+
+def getInt(message):
+    while True:
+        try:
+            int_number = int(input(message + " : "))
+            return int_number
+        except:
+            print()
+            print("Enter an integer number, try again")
+            continue
+
+
+def getFloat(message):
+    while True:
+        try:
+            float_number = float(input(message + " : "))
+            return float_number
+        except:
+            print()
+            print("Enter a float / number, try again")
+            continue
+
+
+def to05Tick(number):
+    nu =  (round(number *200, -1)) / 200
+    return nu
+
+def to0025Tick(number):
+    nu =  (round(number *4000, -1)) / 4000
+    return nu
+
+def intoCurrencyTick(price):
+    if price is None:
+        return None
+    else:
+        return to0025Tick(price)
+
+
+def intoStockTick(price):
+    if price is None:
+        return None
+    else:
+        return to05Tick(price)
+
+def intoIntTick(price):
+    if price is None:
+        return None
+    else:
+        return int(price)
+
+def getLongEntryPrice():
+    return getFloat("Enter Long Buy Price : ")
+
+def getShortEntryPrice()
+    return getFloat("Enter Short Sell Price : ")
+
+def getLongSLPrice(buffer_percent = 0.05):
+    triger = getFloat("Enter SL for Long ( sell ) Price : ")
+    sl = triger * ( 1 + buffer_percent / 100)
+    return triger, sl
+
+def getShortSLPrice(buffer_percent = 0.05):
+    triger = getFloat("Enter SL for Short ( buy ) Price : ")
+    sl = triger *( 1 - buffer_percent / 100)
+    return triger, sl
+        
+
+def getLongTargetPrice():
+        return getFloat("Enter Target for Long ( sell ) Price : ")
+
+
+def getShortTargetPrice():
+        return getFloat("Enter Target for Short ( buy ) Price : ")
+
+
+def riskForLong(long_price, sl_price):
+    risk = long_price - sl_price
+    percent = (risk * 100) / long_price
+    return risk, percent
+
+def riskForShort(short_price, sl_price):
+    risk =  sl_price - short_price
+    percent = (risk * 100) / short_price
+    return risk, percent
+
+def targetForLong(long_price, target_price):
+    target = target_price - long_price
+    percent = (target * 100) / long_price
+    return target, percent
+
+def targetForShort(short_price, target_price):
+    target = short_price - target_price
+    percent = (target * 100) / short_price
+    return target, percent
+
+
+
+def isValidSLForLong(long_price, sl_price, min_risk_percent = 0.5, max_risk_percent = 1.0):
+    risk, risk_percent  = riskForLong(long_price, sl_price)
+    if risk_percent < min_risk_percent:
+        return False
+    elif risk_percent > max_risk_percent:
+        return False
+    else:
+        return True
+
+
+
+def isValidSLForShort(short_price, sl_price, min_risk_percent = 0.5, max_risk_percent = 1.0):
+    risk, risk_percent  = riskForShort(short_price, sl_price)
+    if risk_percent < min_risk_percent:
+        return False
+    elif risk_percent > max_risk_percent:
+        return False
+    else:
+        return True
+
+def isValidTargetForLong(long_price, target_price, min_target_percent = 1, max_risk_percent = 3.0):
+    target, target_percent  = targetForLong(long_price, target_price)
+    if target_percent < min_target_percent:
+        return False
+    elif target_percent > max_target_percent:
+        return False
+    else:
+        return True
+
+def isValidTargetForShort(short_price, target_price, min_target_percent = 1, max_risk_percent = 3.0):
+    target, target_percent  = targetForShort(short_price, target_price)
+    if target_percent < min_target_percent:
+        return False
+    elif target_percent > max_target_percent:
+        return False
+    else:
+        return True
+
+
+
+
+
+def getLongPrice(buffer_percent):
+    price = getLongEntryPrice()
+    triger, sl = getLongSLPrice(buffer_percent)
+    if triger 
+
+
 def createOrder():
     #
-    scrip = getScrip(file_of_scrip, scrip_name)
+    exchange, instrument_type, scrip = getScrip(file_of_scrip, scrip_name)
     order_type = getOrderType()
 
 def toUpperCase(list_of_string):
@@ -257,11 +423,14 @@ def getActionChoice():
 
 
 def getItemFromList(data, number):
-    try:
-        return data[number - 1]
-    except:
-        print("can not retrive item from list")
-        return None
+    if number == 0:
+        return CLOSE_LOOP
+    else:
+        try:
+            return toUpperCase(data[number - 1])
+        except:
+            print("can not retrive item from list")
+            return None
 
 
 def getChoice(choice_list):
@@ -276,6 +445,7 @@ def getChoice(choice_list):
             if number < 0 or number > max_number:
                 print("It should be between 0 and {}".format(max_number))
                 print()
+                continue
             else:
                 return getItemFromList(choice_list, number)
         except:
@@ -322,5 +492,13 @@ master_db = "scrip.csv"
 #scrip name
 
 #getScrip(master_db,0, 3, 5)
-ins = getInstrument(master_db,3)
-print(ins)
+#ins = getInstrument(master_db,3)
+#print(ins)
+
+ll = ["ab","cd","ef","gh"]
+
+#ent = getEntry()
+#print(ent)
+
+
+print(to0025Tick(83.4842))
