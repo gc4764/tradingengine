@@ -1,6 +1,7 @@
 import csv
 import sys
-
+import os
+import argparse
 
 # exchange  NSE BSE MCX NFO NCD
 #instrument_type EQUITY FUTSTK etc
@@ -24,6 +25,10 @@ EXIT = "LONG EXIT"
 COVER = "SHORT COVER"
 
 def getInt(message):
+
+    """Get int value from keyboard 
+       covert it into int type
+       keep trying untill get int value"""
     while True:
         try:
             int_number = int(input(message + " : "))
@@ -34,7 +39,12 @@ def getInt(message):
             continue
 
 
+
 def getFloat(message):
+
+    """Get folat value from keyboard 
+    covert it into int type
+    keep trying untill get float value"""
     while True:
         try:
             float_number = float(input(message + " : "))
@@ -45,82 +55,143 @@ def getFloat(message):
             continue
 
 
+
 def to05Tick(number):
+
     nu =  (round(number *200, -1)) / 200
     return nu
 
+
+
 def to0025Tick(number):
+
     nu =  (round(number *4000, -1)) / 4000
     return nu
 
+
+
 def intoCurrencyTick(price):
+
     if price is None:
         return None
     else:
         return to0025Tick(price)
 
 
+
+
 def intoStockTick(price):
+
     if price is None:
         return None
     else:
         return to05Tick(price)
 
+
+
 def intoIntTick(price):
+
     if price is None:
         return None
     else:
         return int(price)
 
+
+
+
 def getLongEntryPrice():
+
     return getFloat("Enter Long Buy Price : ")
 
-def getShortEntryPrice()
+
+
+
+def getShortEntryPrice():
+
     return getFloat("Enter Short Sell Price : ")
 
+
+
+
 def getLongSLPrice(buffer_percent = 0.05):
-    triger = getFloat("Enter SL for Long ( sell ) Price : ")
-    sl = triger * ( 1 + buffer_percent / 100)
+
+    triger = getFloat("Enter SL for Long ( sell Price ) : ")
+    sl = triger * ( 1 - buffer_percent / 100)
     return triger, sl
 
+
+
+
+
 def getShortSLPrice(buffer_percent = 0.05):
-    triger = getFloat("Enter SL for Short ( buy ) Price : ")
-    sl = triger *( 1 - buffer_percent / 100)
+
+    triger = getFloat("Enter SL for Short ( buy Price ) : ")
+    sl = triger *( 1 + buffer_percent / 100)
     return triger, sl
         
 
+
+
 def getLongTargetPrice():
-        return getFloat("Enter Target for Long ( sell ) Price : ")
+
+    return getFloat("Enter Target for Long ( sell Price ) : ")
+
+
 
 
 def getShortTargetPrice():
-        return getFloat("Enter Target for Short ( buy ) Price : ")
+
+    return getFloat("Enter Target for Short ( buy Price ) : ")
+
+
+
 
 
 def riskForLong(long_price, sl_price):
+
     risk = long_price - sl_price
     percent = (risk * 100) / long_price
     return risk, percent
 
+
+
+
+
 def riskForShort(short_price, sl_price):
+
     risk =  sl_price - short_price
     percent = (risk * 100) / short_price
     return risk, percent
 
+
+
+
 def targetForLong(long_price, target_price):
+
     target = target_price - long_price
     percent = (target * 100) / long_price
     return target, percent
 
+
+
+
 def targetForShort(short_price, target_price):
+
     target = short_price - target_price
     percent = (target * 100) / short_price
     return target, percent
 
 
 
-def isValidSLForLong(long_price, sl_price, min_risk_percent = 0.5, max_risk_percent = 1.0):
-    risk, risk_percent  = riskForLong(long_price, sl_price)
+
+
+def isValidSLForLong(long_price, 
+                     sl_price, 
+                     min_risk_percent, 
+                     max_risk_percent):
+
+    risk, risk_percent  = riskForLong(long_price = long_price, 
+                                      sl_price = sl_price)
     if risk_percent < min_risk_percent:
         return False
     elif risk_percent > max_risk_percent:
@@ -130,8 +201,14 @@ def isValidSLForLong(long_price, sl_price, min_risk_percent = 0.5, max_risk_perc
 
 
 
-def isValidSLForShort(short_price, sl_price, min_risk_percent = 0.5, max_risk_percent = 1.0):
-    risk, risk_percent  = riskForShort(short_price, sl_price)
+
+def isValidSLForShort(short_price, 
+                      sl_price, 
+                      min_risk_percent, 
+                      max_risk_percent):
+
+    risk, risk_percent  = riskForShort(short_price = short_price, 
+                                       sl_price = sl_price)
     if risk_percent < min_risk_percent:
         return False
     elif risk_percent > max_risk_percent:
@@ -139,8 +216,16 @@ def isValidSLForShort(short_price, sl_price, min_risk_percent = 0.5, max_risk_pe
     else:
         return True
 
-def isValidTargetForLong(long_price, target_price, min_target_percent = 1, max_risk_percent = 3.0):
-    target, target_percent  = targetForLong(long_price, target_price)
+
+
+
+def isValidTargetForLong(long_price, 
+                         target_price, 
+                         min_target_percent, 
+                         max_target_percent):
+
+    target, target_percent  = targetForLong(long_price = long_price, 
+                                            target_price = target_price)
     if target_percent < min_target_percent:
         return False
     elif target_percent > max_target_percent:
@@ -148,8 +233,17 @@ def isValidTargetForLong(long_price, target_price, min_target_percent = 1, max_r
     else:
         return True
 
-def isValidTargetForShort(short_price, target_price, min_target_percent = 1, max_risk_percent = 3.0):
-    target, target_percent  = targetForShort(short_price, target_price)
+
+
+
+
+def isValidTargetForShort(short_price, 
+                          target_price, 
+                          min_target_percent, 
+                          max_target_percent):
+
+    target, target_percent  = targetForShort(short_price = short_price, 
+                                             target_price = target_price)
     if target_percent < min_target_percent:
         return False
     elif target_percent > max_target_percent:
@@ -161,16 +255,238 @@ def isValidTargetForShort(short_price, target_price, min_target_percent = 1, max
 
 
 
-def getLongPrice(buffer_percent):
-    price = getLongEntryPrice()
-    triger, sl = getLongSLPrice(buffer_percent)
-    if triger 
+def isValidSLTargetForLong(long_price, 
+                           sl_price, 
+                           target_price, 
+                           min_risk_percent, 
+                           max_risk_percent, 
+                           min_target_percent, 
+                           max_target_percent):
+
+    is_sl_valid = isValidSLForLong(long_price = long_price, 
+                                   sl_price = sl_price, 
+                                   min_risk_percent = min_risk_percent,
+                                   max_risk_percent = max_risk_percent)
+    is_target_valid = isValidTargetForLong(long_price = long_price, 
+                                           target_price = tatget_price, 
+                                           min_target_percent = min_target_percent, 
+                                           max_target_percent = max_target_percent)
+    if is_sl_valid and is_target_valid:
+        return True
+    else:
+        return False
+
+
+
+
+
+def isValidSLTargetForShort(short_price, 
+                            sl_price, 
+                            target_price, 
+                            min_risk_percent, 
+                            max_risk_percent, 
+                            min_target_percent, 
+                            max_target_percent):
+
+    is_sl_valid = isValidSLForShort(short_price = short_price, 
+                                    sl_price = sl_price, 
+                                    min_risk_percent = min_risk_percent, 
+                                    max_risk_percent = max_risk_peecent)
+    is_target_valid = isValidTargetForShort(short_price = short_price, 
+                                            target_price = target_price, 
+                                            min_target_percent = min_target_percent, 
+                                            max_target_percent = max_target_percent)
+    if is_sl_valid and is_target_valid:
+        return True
+    else:
+        return False
+
+
+
+
+
+def getEntrySLPriceForLong(buffer_percent = 0.05, 
+                           min_risk_percent = 0.5, 
+                           max_risk_percent = 1.0):
+
+    long_price = getLongEntryPrice()
+    while True:
+        triger, sl_price = getLongSLPrice(buffer_percent = buffer_percent)
+        if isValidSLForLong(long_price = long_price, 
+                            sl_price = triger,
+                            min_risk_percent = min_risk_percent,
+                            max_risk_percent = max_risk_percent):
+            return long_price, triger, sl_price
+        else:
+            min_sl = long_price * (1 - min_risk_percent / 100)
+            max_sl = long_price * (1 - max_risk_percent / 100)
+            print("Enter sl between : {} and {} ".format(min_sl, max_sl))
+            continue
+    return long_price, triger, sl_price
+
+
+
+
+
+
+
+def getEntrySLPriceForShort(buffer_percent = 0.05, 
+                           min_risk_percent = 0.5, 
+                           max_risk_percent = 1.0):
+
+    short_price = getShortEntryPrice()
+    while True:
+        triger, sl_price = getShortSLPrice(buffer_percent = buffer_percent)
+        if isValidSLForShort(short_price = short_price, 
+                            sl_price = triger,
+                            min_risk_percent = min_risk_percent,
+                            max_risk_percent = max_risk_percent):
+            return short_price, triger, sl_price
+        else:
+            min_sl = short_price * (1 + min_risk_percent / 100)
+            max_sl = short_price * (1 + max_risk_percent / 100)
+            print("Enter sl between : {} and {} ".format(min_sl, max_sl))
+            continue
+    return short_price, triger, sl_price
+
+
+
+
+
+def getEntrySLTargetPriceForLong(buffer_percent = 0.05, 
+                                 min_risk_percent = 0.5, 
+                                 max_risk_percent = 1.0,
+                                 min_target_percent = 1.0,
+                                 max_target_percent = 3.0):
+
+    long_price = getLongEntryPrice()
+    while True:
+        triger, sl_price = getLongSLPrice(buffer_percent = buffer_percent)
+        if isValidSLForLong(long_price = long_price, 
+                            sl_price = triger,
+                            min_risk_percent = min_risk_percent,
+                            max_risk_percent = max_risk_percent):
+            break
+        else:
+            min_sl = long_price * (1 - min_risk_percent / 100)
+            max_sl = long_price * (1 - max_risk_percent / 100)
+            print("Enter sl between : {} and {} ".format(min_sl, max_sl))
+            continue
+
+    while True:
+        target = getLongTargetPrice()
+        if isValidTargetForLong(long_price = long_price,
+                                target_price = target_price,
+                                min_target_percent = min_target_percent,
+                                max_target_percent = max_target_percent):
+            break
+        else:
+            min_target = long_price * ( 1 + min_target_percent / 100)
+            max_target = long_price * ( 1 + max_target_percent / 100)
+            print("Enter target between : {} and {} ".format(min_target, max_target))
+            continue
+    return long_price, triger, sl_price, target_price
+
+
+
+
+
+
+def getEntrySLTargetPriceForShort(buffer_percent = 0.05, 
+                                 min_risk_percent = 0.5, 
+                                 max_risk_percent = 1.0,
+                                 min_target_percent = 1.0,
+                                 max_target_percent = 3.0):
+
+    short_price = getShortEntryPrice()
+    while True:
+        triger, sl_price = getShortSLPrice(buffer_percent = buffer_percent)
+        if isValidSLForShort(short_price = short_price, 
+                            sl_price = triger,
+                            min_risk_percent = min_risk_percent,
+                            max_risk_percent = max_risk_percent):
+            break
+        else:
+            min_sl = short_price * (1 + min_risk_percent / 100)
+            max_sl = short_price * (1 + max_risk_percent / 100)
+            print("Enter sl between : {} and {} ".format(min_sl, max_sl))
+            continue
+
+    while True:
+        target = getShortTargetPrice()
+        if isValidTargetForShort(short_price = short_price,
+                                target_price = target_price,
+                                min_target_percent = min_target_percent,
+                                max_target_percent = max_target_percent):
+            break
+        else:
+            min_target = short_price * ( 1 - min_target_percent / 100)
+            max_target = short_price * ( 1 - max_target_percent / 100)
+            print("Enter target between : {} and {} ".format(min_target, max_target))
+            continue
+    return short_price, triger, sl_price, target_price
+
+
+
+def getPrice(buffer_percent = 0.05,                     
+             min_risk_percent = 0.5,
+             max_risk_percent = 1.0,
+             min_target_percent = 1.0,
+             max_target_percent = 3.0):
+
+    order_type = getOrderType()
+
+    if order_type == LONG:
+        # order_type, long_price, triger, sl_price, target
+        return order_type, getEntrySLTargetPriceForLong(buffer_percent = 0.05,
+                                                        min_risk_percent = 0.5,
+                                                        max_risk_percent = 1.0,
+                                                        min_target_percent = 1.0,
+                                                        max_target_percent = 3.0)
+    elif order_type == SHORT:
+        return order_type, getEntrySLTargetPriceForShort(buffer_percent = 0.05,
+                                                        min_risk_percent = 0.5,
+                                                        max_risk_percent = 1.0,
+                                                        min_target_percent = 1.0,
+                                                        max_target_percent = 3.0)
+    elif order_type == LONG_SL:
+        #order_type, _ , triger, sl_price, _
+        pass
+    elif order_type == SHORT_SL:
+        pass
+    elif order_type == LONG_TARGET:
+        #order_type, _ , _ , _ , target
+        pass
+    elif order_type == SHORT_TARGET:
+        pass
+    elif order_type == LONG_SL_TARGET:
+        #order_type, _ , triger, sl_price, target
+        pass
+    elif order_type == SHORT_SL_TARGET:
+        pass
+    else:
+        print()
+
+
+
 
 
 def createOrder():
     #
     exchange, instrument_type, scrip = getScrip(file_of_scrip, scrip_name)
-    order_type = getOrderType()
+    order_type, price, triger, sl_price, target = getPrice(buffer_percent = 0.05,
+                                                           min_risk_percent = 0.5,
+                                                           max_risk_percent = 1.0,
+                                                           min_target_percent = 1.0,
+                                                           max_target_percent = 3.0)
+    time_frame = getTimeFrame()
+    trade_type = getTradeType()
+    analysis_type = getAnalysisType()
+    is_based_on_rule = getIsBasedOnRule()
+    note = getNote()
+
+    #retrun all variable
+
 
 def toUpperCase(list_of_string):
     #done
@@ -481,6 +797,17 @@ def action():
 
 
 
+def setUp():
+    """Create / update file,
+    download files"""
+
+
+def trader():
+    """Show option"""
+    choice_list = []
+    choice = getChoice(choice_list)
+
+
 master_db = "scrip.csv"
 
 #getAllInstrumentType(master_db,3)
@@ -502,3 +829,13 @@ ll = ["ab","cd","ef","gh"]
 
 
 print(to0025Tick(83.4842))
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--getint", action="store_true")
+
+
+args = parser.parse_args()
+
+if args.getint:
+    getInt("hell")
+
